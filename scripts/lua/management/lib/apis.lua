@@ -28,7 +28,7 @@ MANAGEDURL_HOST = (MANAGEDURL_HOST ~= nil and MANAGEDURL_HOST ~= '') and MANAGED
 local MANAGEDURL_PORT = os.getenv("PUBLIC_MANAGEDURL_PORT")
 MANAGEDURL_PORT = (MANAGEDURL_PORT ~= nil and MANAGEDURL_PORT ~= '') and MANAGEDURL_PORT or "8080"
 local GATEWAY_URL = os.getenv("PUBLIC_GATEWAY_URL")
-GATEWAY_URL = (GATEWAY_URL ~= nil and GATEWAY_URL ~= '') and GATEWAY_URL or utils.concatStrings({"http://", MANAGEDURL_HOST, ":", MANAGEDURL_PORT})
+GATEWAY_URL = (GATEWAY_URL ~= nil and GATEWAY_URL ~= '') and GATEWAY_URL or utils.concatStrings({"https://", MANAGEDURL_HOST, ":", MANAGEDURL_PORT})
 
 local _M = {}
 
