@@ -1,0 +1,70 @@
+diff --git a/Makefile b/Makefile
+index 3d0a5d8..1b61266 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,8 +21,8 @@
+ #DOCKER_TAG ?= snapshot-`date +'%Y%m%d-%H%M'`
+ 
+ OPENWHISK_TARGET_REGISTRY ?= docker.io
+-OPENWHISK_TARGET_PREFIX ?= openwhisk
+-OPENWHISK_TARGET_TAG ?= latest
++OPENWHISK_TARGET_PREFIX ?= niks3089
++OPENWHISK_TARGET_TAG ?= nimbella
+ 
+ RUNTIME := ${OPENWHISK_TARGET_REGISTRY}/${OPENWHISK_TARGET_PREFIX}/apigateway:${OPENWHISK_TARGET_TAG}
+ PROFILING := ${OPENWHISK_TARGET_REGISTRY}/${OPENWHISK_TARGET_PREFIX}/apigateway-profiling:${OPENWHISK_TARGET_TAG}
+diff --git a/conf.d/managed_endpoints.conf b/conf.d/managed_endpoints.conf
+index 463f006..7df79a4 100644
+--- a/conf.d/managed_endpoints.conf
++++ b/conf.d/managed_endpoints.conf
+@@ -16,19 +16,7 @@
+ #
+ 
+ server {
+-    listen 8080 default ssl;
+-
+-    ssl_session_cache    shared:SSL:1m;
+-    ssl_session_timeout  10m;
+-    ssl_certificate      /etc/api-gateway/certs/tls.crt;
+-    ssl_certificate_key  /etc/api-gateway/certs/tls.key;
+-    ssl_verify_client off;
+-    ssl_protocols        TLSv1 TLSv1.1 TLSv1.2;
+-    ssl_ciphers RC4:HIGH:!aNULL:!MD5;
+-    ssl_prefer_server_ciphers on;
+-    proxy_ssl_verify off;
+-    proxy_ssl_session_reuse on;
+-    proxy_set_header "X-Request-ID" $request_id;
++    listen 8080 default_server;
+ 
+     server_tokens off;
+     ignore_invalid_headers off;
+diff --git a/init.sh b/init.sh
+index 79323bc..6fcc7a4 100755
+--- a/init.sh
++++ b/init.sh
+@@ -59,10 +59,10 @@ echo resolver $(awk 'BEGIN{ORS=" "} /^nameserver/{print $2}' /etc/resolv.conf |
+ echo "   ...  with dns $(cat /etc/api-gateway/conf.d/includes/resolvers.conf)"
+ 
+ echo "   ... testing configuration "
+-api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway-conf/api-gateway-conf
++api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
+ 
+ echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
+-api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway-conf/api-gateway-conf -g "daemon off; error_log /dev/stderr ${log_level};" &
++api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};" &
+ 
+ if [[ -n "${redis_host}" && -n "${redis_port}" ]]; then
+     sleep 1  # sleep until api-gateway is set up
+diff --git a/scripts/lua/management/lib/apis.lua b/scripts/lua/management/lib/apis.lua
+index be4eae6..7a2cdac 100644
+--- a/scripts/lua/management/lib/apis.lua
++++ b/scripts/lua/management/lib/apis.lua
+@@ -28,7 +28,7 @@ MANAGEDURL_HOST = (MANAGEDURL_HOST ~= nil and MANAGEDURL_HOST ~= '') and MANAGED
+ local MANAGEDURL_PORT = os.getenv("PUBLIC_MANAGEDURL_PORT")
+ MANAGEDURL_PORT = (MANAGEDURL_PORT ~= nil and MANAGEDURL_PORT ~= '') and MANAGEDURL_PORT or "8080"
+ local GATEWAY_URL = os.getenv("PUBLIC_GATEWAY_URL")
+-GATEWAY_URL = (GATEWAY_URL ~= nil and GATEWAY_URL ~= '') and GATEWAY_URL or utils.concatStrings({"https://", MANAGEDURL_HOST, "/gw"})
++GATEWAY_URL = (GATEWAY_URL ~= nil and GATEWAY_URL ~= '') and GATEWAY_URL or utils.concatStrings({"https://", MANAGEDURL_HOST, ":", MANAGEDURL_PORT})
+ 
+ local _M = {}
+ 
